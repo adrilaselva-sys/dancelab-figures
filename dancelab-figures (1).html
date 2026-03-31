@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DanceLab Experience Centre — Interactive Figures</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1917;
+    --ink-mid: #5a5854;
+    --ink-light: #9a9892;
+    --ink-ghost: #c8c6c0;
+    --paper: #f7f5f0;
+    --paper-warm: #ede9e0;
+    --paper-deep: #e2ddd4;
+    --amber: #b87213;
+    --amber-light: #e8c87a;
+    --teal: #1d7a60;
+    --teal-light: #9fd8c4;
+    --purple: #5a4ab5;
+    --purple-light: #c4bee8;
+    --coral: #c04828;
+    --coral-light: #f0b8a0;
+    --gray-mid: #888780;
+    --rule: #d0cdc4;
+  }
+
+  html { font-size: 16px; background: var(--paper); color: var(--ink); }
+
+  body {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* Header */
+  header {
+    border-bottom: 1px solid var(--rule);
+    padding: 2.5rem 3rem 1.5rem;
+    background: var(--paper);
+  }
+
+  .header-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 300;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 0.6rem;
+  }
+
+  header h1 {
+    font-size: 1.9rem;
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+
+  header p {
+    margin-top: 0.6rem;
+    font-size: 1.05rem;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--ink-mid);
+    max-width: 60ch;
+    line-height: 1.6;
+  }
+
+  /* Tab navigation */
+  nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper);
+    padding: 0 3rem;
+    overflow-x: auto;
+  }
+
+  .tab {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    padding: 1rem 1.4rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    white-space: nowrap;
+    position: relative;
+    top: 1px;
+  }
+
+  .tab:hover { color: var(--ink-mid); }
+  .tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+
+  /* Main content area */
+  main {
+    padding: 2.5rem 3rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .figure-panel { display: none; }
+  .figure-panel.active { display: block; }
+
+  .figure-title {
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 0.3rem;
+  }
+
+  .figure-caption {
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--ink-mid);
+    margin-bottom: 1.8rem;
+    max-width: 70ch;
+    line-height: 1.65;
+  }
+
+  .figure-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    color: var(--ink-ghost);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  /* SVG container */
+  .svg-wrap {
+    border: 1px solid var(--rule);
+    background: var(--paper-warm);
+    border-radius: 4px;
+    padding: 2rem;
+    overflow: hidden;
+  }
+
+  .svg-wrap svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Tooltip */
+  #tooltip {
+    position: fixed;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 300;
+    line-height: 1.5;
+    padding: 0.6rem 0.9rem;
+    border-radius: 3px;
+    max-width: 260px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 999;
+    letter-spacing: 0.02em;
+  }
+
+  #tooltip.visible { opacity: 1; }
+
+  /* Zone nodes — hover state */
+  .zone-node {
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .zone-node:hover { opacity: 0.85; }
+
+  /* Legend row */
+  .legend {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1.2rem;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--ink-mid);
+    letter-spacing: 0.06em;
+  }
+
+  .legend-line {
+    width: 28px;
+    height: 1px;
+    background: var(--ink);
+  }
+  .legend-line.dashed {
+    background: none;
+    border-top: 1px dashed var(--ink-mid);
+  }
+  .legend-line.amber {
+    background: var(--amber);
+    height: 2px;
+  }
+
+  /* Footer note */
+  .fig-note {
+    margin-top: 1.2rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--ink-ghost);
+    letter-spacing: 0.08em;
+    line-height: 1.7;
+  }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 1.5rem 3rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--ink-light);
+    letter-spacing: 0.08em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 600px) {
+    header, main, nav, footer { padding-left: 1.2rem; padding-right: 1.2rem; }
+    header h1 { font-size: 1.4rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="tooltip"></div>
+
+<header>
+  <div class="header-eyebrow">Interactive Figures — STUK / DanceLab Experience Centre</div>
+  <h1>Designing the DanceLab</h1>
+  <p>Three diagrams mapping the spatial, technical, and conceptual architecture proposed for the DanceLab Experience Centre, Leuven. From the paper by Adriana Parente La Selva, commissioned by STUK, 2026.</p>
+</header>
+
+<nav>
+  <button class="tab active" onclick="showTab('floor')">Fig. 1 — Floor plan</button>
+  <button class="tab" onclick="showTab('deepspace')">Fig. 2 — Deep Space</button>
+  <button class="tab" onclick="showTab('stack')">Fig. 3 — Infrastructure stack</button>
+</nav>
+
+<main>
+
+<!-- FIGURE 1: Floor Plan -->
+<div class="figure-panel active" id="panel-floor">
+  <div class="figure-number">Figure 1</div>
+  <div class="figure-title">The four zones</div>
+  <p class="figure-caption">The DanceLab floor plan as four functional zones, each shifting between modes depending on the programming. Hover over each zone to read its description. The dashed arrows indicate the circulation logic between zones.</p>
+  <div class="svg-wrap">
+    <svg viewBox="0 0 680 500" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arr1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="#9a9892" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+    </defs>
+
+    <!-- Building shell -->
+    <rect x="28" y="28" width="624" height="444" rx="12" fill="none" stroke="#c8c6c0" stroke-width="1.2"/>
+
+    <!-- Zone 1: Archive Studio -->
+    <g class="zone-node" data-tip="Archive Studio — where archives are made. The active production heart of the DanceLab: markerless motion recording, point cloud capture, Laban Effort analysis. In public mode it becomes the Motion Mirror, where visitors' movement is tracked alongside a historical recording. One day per week: Open Studio, no tickets.">
+      <rect x="46" y="46" width="246" height="190" rx="8" fill="#9fd8c4" fill-opacity="0.25" stroke="#1d7a60" stroke-width="0.8"/>
+      <text x="169" y="82" text-anchor="middle" font-family="'DM Mono', monospace" font-size="11" font-weight="400" fill="#1d7a60" letter-spacing="0.1em" text-transform="uppercase">ARCHIVE STUDIO</text>
+      <text x="169" y="100" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-size="12.5" fill="#1d7a60" font-style="italic">where archives are made</text>
+      <line x1="80" y1="120" x2="260" y2="120" stroke="#1d7a60" stroke-width="0.4" stroke-opacity="0.3"/>
+      <text x="169" y="142" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#1d7a60" fill-opacity="0.7">motion recording</text>
+      <text x="169" y="158" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#1d7a60" fill-opacity="0.7">Motion Mirror (public mode)</text>
+      <text x="169" y="174" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#1d7a60" fill-opacity="0.7">Open Studio · 1 day / week</text>
+      <text x="169" y="220" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="#1d7a60" fill-opacity="0.45">Orbbec LiDAR · Sony Alpha · overhead truss</text>
+    </g>
+
+    <!-- Zone 2: Discovery Zone -->
+    <g class="zone-node" data-tip="Discovery Zone — navigating what has been held. Leap Motion gesture booths let visitors browse the MNEMOSYNE archive without a screen or prior knowledge. Themed pathways assembled like the Jacob's Pillow Dance Interactive model. Twice yearly a community co-curates the zone — with decision-making power, credit, and payment.">
+      <rect x="310" y="46" width="344" height="190" rx="8" fill="#c4bee8" fill-opacity="0.25" stroke="#5a4ab5" stroke-width="0.8"/>
+      <text x="482" y="82" text-anchor="middle" font-family="'DM Mono', monospace" font-size="11" font-weight="400" fill="#5a4ab5" letter-spacing="0.1em">DISCOVERY ZONE</text>
+      <text x="482" y="100" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-size="12.5" fill="#5a4ab5" font-style="italic">navigating what has been held</text>
+      <line x1="340" y1="120" x2="624" y2="120" stroke="#5a4ab5" stroke-width="0.4" stroke-opacity="0.3"/>
+      <text x="482" y="142" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#5a4ab5" fill-opacity="0.7">Leap Motion gesture booths</text>
+      <text x="482" y="158" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#5a4ab5" fill-opacity="0.7">MNEMOSYNE archive access</text>
+      <text x="482" y="174" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#5a4ab5" fill-opacity="0.7">co-curated seasons</text>
+      <text x="482" y="220" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="#5a4ab5" fill-opacity="0.45">movable LED pylons · no device required</text>
+    </g>
+
+    <!-- Zone 3: Deep Space -->
+    <g class="zone-node" data-tip="Deep Space — the immersive core. Wall and floor projection at 8K / 120Hz with laser tracking. Three modes: Archival (1:1 scale playback), Performance (live dancer + digital twin via PREMIERE toolbox), Education (Laban Effort data drives visual texture). In intra-active mode, both archived body and live visitor are tracked simultaneously — neither is background.">
+      <rect x="46" y="256" width="306" height="216" rx="8" fill="#f0b8a0" fill-opacity="0.25" stroke="#c04828" stroke-width="0.8"/>
+      <text x="199" y="292" text-anchor="middle" font-family="'DM Mono', monospace" font-size="11" fill="#c04828" letter-spacing="0.1em">DEEP SPACE</text>
+      <text x="199" y="310" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-size="12.5" fill="#c04828" font-style="italic">the immersive core</text>
+      <line x1="76" y1="328" x2="320" y2="328" stroke="#c04828" stroke-width="0.4" stroke-opacity="0.3"/>
+      <text x="199" y="348" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#c04828" fill-opacity="0.7">archival mode · 1:1 scale playback</text>
+      <text x="199" y="364" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#c04828" fill-opacity="0.7">performance mode · live + digital twin</text>
+      <text x="199" y="380" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#c04828" fill-opacity="0.7">education · Laban effort rendering</text>
+      <text x="199" y="396" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#c04828" fill-opacity="0.7">intra-active · visitor + archive</text>
+      <text x="199" y="452" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="#c04828" fill-opacity="0.45">wall + floor projection · 8K · 120Hz · laser tracking</text>
+    </g>
+    <!-- Holo-Pit — separate clickable node within Deep Space -->
+    <g class="zone-node" data-tip="Holo-Pit — a recessed floor section within the Deep Space with walk-on LED glass and a transparent Holo-Gauze screen dropping from the ceiling above. Volumetric display without VR headsets. No device required, no prior knowledge assumed. The space's most accessible immersive offer — visitors can simply walk in and encounter a volumetric figure.">
+      <rect x="58" y="404" width="122" height="52" rx="5" fill="#f0b8a0" fill-opacity="0.35" stroke="#c04828" stroke-width="0.8" stroke-dasharray="5 3"/>
+      <text x="119" y="424" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#c04828">Holo-Pit</text>
+      <text x="119" y="440" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#c04828" fill-opacity="0.7">volumetric · no headset</text>
+      <text x="119" y="450" text-anchor="middle" font-family="'DM Mono', monospace" font-size="8.5" fill="#c04828" fill-opacity="0.45">LED glass floor · Holo-Gauze</text>
+    </g>
+
+    <!-- Zone 4: The Lab -->
+    <g class="zone-node" data-tip="The Lab — the visible workshop. Archivists and researchers work in full view of the public: processing point clouds, building AI skeletons, annotating motion data. Primary home of the Fellowship programme. The proximity of doing and holding — making the work of preservation legible to those it is for.">
+      <rect x="370" y="256" width="284" height="216" rx="8" fill="#e8c87a" fill-opacity="0.2" stroke="#b87213" stroke-width="0.8"/>
+      <text x="512" y="292" text-anchor="middle" font-family="'DM Mono', monospace" font-size="11" fill="#b87213" letter-spacing="0.1em">THE LAB</text>
+      <text x="512" y="310" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-size="12.5" fill="#b87213" font-style="italic">visible workshop</text>
+      <line x1="400" y1="328" x2="622" y2="328" stroke="#b87213" stroke-width="0.4" stroke-opacity="0.3"/>
+      <text x="512" y="348" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#b87213" fill-opacity="0.7">archivists working in view</text>
+      <text x="512" y="364" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#b87213" fill-opacity="0.7">Fellowship programme base</text>
+      <text x="512" y="380" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#b87213" fill-opacity="0.7">researcher + artist collaboration</text>
+      <text x="512" y="396" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#b87213" fill-opacity="0.7">processing point clouds / annotation</text>
+      <text x="512" y="452" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="#b87213" fill-opacity="0.45">server rack · Theia3D · Modosc · TouchDesigner</text>
+    </g>
+
+    <!-- Circulation arrows -->
+    <line x1="292" y1="138" x2="308" y2="138" stroke="#9a9892" stroke-width="0.8" stroke-dasharray="3 3" marker-end="url(#arr1)"/>
+    <line x1="308" y1="148" x2="292" y2="148" stroke="#9a9892" stroke-width="0.8" stroke-dasharray="3 3" marker-end="url(#arr1)"/>
+    <line x1="169" y1="236" x2="169" y2="254" stroke="#9a9892" stroke-width="0.8" stroke-dasharray="3 3" marker-end="url(#arr1)"/>
+    <line x1="482" y1="236" x2="482" y2="254" stroke="#9a9892" stroke-width="0.8" stroke-dasharray="3 3" marker-end="url(#arr1)"/>
+    <line x1="352" y1="360" x2="368" y2="360" stroke="#9a9892" stroke-width="0.8" stroke-dasharray="3 3" marker-end="url(#arr1)"/>
+    <line x1="368" y1="372" x2="352" y2="372" stroke="#9a9892" stroke-width="0.8" stroke-dasharray="3 3" marker-end="url(#arr1)"/>
+
+    <!-- Entry -->
+    <text x="340" y="486" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="#9a9892" letter-spacing="0.08em">↑  entrance / public threshold</text>
+    </svg>
+  </div>
+  <p class="fig-note">Hover over each zone to read its description. Dashed arrows indicate circulation between zones.</p>
+</div>
+
+<!-- FIGURE 2: Deep Space -->
+<div class="figure-panel" id="panel-deepspace">
+  <div class="figure-number">Figure 2</div>
+  <div class="figure-title">The Deep Space — intra-active environment</div>
+  <p class="figure-caption">Cross-section of the Deep Space showing the relationship between the archived body (solid), the live visitor (dashed), and the effort/trace energy (amber) that both generate. The Holo-Pit — a recessed LED glass floor with a Holo-Gauze drop — appears at the front of the room as a distinct volumetric zone within the larger space. Based on Karen Barad's concept of intra-action: neither body pre-exists the encounter — both are constituted through it.</p>
+  <div class="svg-wrap">
+    <svg viewBox="0 0 680 440" xmlns="http://www.w3.org/2000/svg">
+
+    <!-- Floor plane -->
+    <polygon points="100,300 580,300 640,390 40,390" fill="#e8c87a" fill-opacity="0.06" stroke="#9a9892" stroke-width="0.8"/>
+    <!-- Back wall -->
+    <polygon points="100,100 580,100 580,300 100,300" fill="#c4bee8" fill-opacity="0.06" stroke="#5a5854" stroke-width="1"/>
+    <!-- Left wall hint -->
+    <polygon points="40,150 100,100 100,300 40,390" fill="none" stroke="#9a9892" stroke-width="0.5" stroke-dasharray="4 3"/>
+
+    <!-- Floor projection zone label -->
+    <polygon points="110,304 570,304 628,384 52,384" fill="none" stroke="#b87213" stroke-width="0.5" stroke-dasharray="2 2" stroke-opacity="0.4"/>
+    <text x="340" y="356" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#b87213" fill-opacity="0.6">floor projection plane — traces linger here</text>
+
+    <!-- Projectors on ceiling -->
+    <rect x="118" y="94" width="28" height="9" rx="2" fill="none" stroke="#9a9892" stroke-width="0.7"/>
+    <rect x="208" y="94" width="28" height="9" rx="2" fill="none" stroke="#9a9892" stroke-width="0.7"/>
+    <rect x="336" y="94" width="28" height="9" rx="2" fill="none" stroke="#9a9892" stroke-width="0.7"/>
+    <rect x="458" y="94" width="28" height="9" rx="2" fill="none" stroke="#9a9892" stroke-width="0.7"/>
+    <rect x="540" y="94" width="28" height="9" rx="2" fill="none" stroke="#9a9892" stroke-width="0.7"/>
+    <text x="340" y="88" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#9a9892" letter-spacing="0.08em">4–8 laser projectors · 8K · 120Hz</text>
+
+    <!-- Laser tracking line -->
+    <line x1="350" y1="100" x2="420" y2="255" stroke="#378ADD" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.55"/>
+    <circle cx="350" cy="100" r="3.5" fill="#E6F1FB" stroke="#378ADD" stroke-width="0.6"/>
+
+    <!-- Archived body (solid) -->
+    <g class="zone-node" data-tip="Archived body — Laban Effort Analysis data (Weight, Space, Time, Flow) extracted by Modosc from the stored USD archive drives the visual and sonic quality of the projection in real time. Strong effort = sharp image. Stillness = the projection quietens.">
+      <ellipse cx="264" cy="166" rx="15" ry="19" fill="none" stroke="#1a1917" stroke-width="1"/>
+      <line x1="264" y1="185" x2="264" y2="238" stroke="#1a1917" stroke-width="1"/>
+      <line x1="264" y1="206" x2="238" y2="226" stroke="#1a1917" stroke-width="1"/>
+      <line x1="264" y1="206" x2="290" y2="223" stroke="#1a1917" stroke-width="1"/>
+      <line x1="264" y1="238" x2="248" y2="272" stroke="#1a1917" stroke-width="1"/>
+      <line x1="264" y1="238" x2="280" y2="272" stroke="#1a1917" stroke-width="1"/>
+    </g>
+
+    <!-- Effort quality lines -->
+    <line x1="264" y1="188" x2="202" y2="153" stroke="#b87213" stroke-width="2.2" opacity="0.75"/>
+    <line x1="260" y1="193" x2="192" y2="198" stroke="#b87213" stroke-width="1.3" opacity="0.48"/>
+    <line x1="268" y1="193" x2="202" y2="243" stroke="#b87213" stroke-width="0.7" opacity="0.28"/>
+    <line x1="269" y1="183" x2="308" y2="146" stroke="#b87213" stroke-width="1.6" opacity="0.58"/>
+    <line x1="272" y1="188" x2="324" y2="183" stroke="#b87213" stroke-width="0.9" opacity="0.36"/>
+
+    <!-- Visitor body (dashed) -->
+    <g class="zone-node" data-tip="Live visitor — laser tracking reads the visitor's movement in real time. Their Effort data enters the same rendering logic as the archived body: the space treats both bodies as co-authors of what it shows. Neither is background. Neither is main event.">
+      <ellipse cx="422" cy="253" rx="11" ry="14" fill="none" stroke="#1a1917" stroke-width="0.9" stroke-dasharray="3 2"/>
+      <line x1="422" y1="267" x2="422" y2="300" stroke="#1a1917" stroke-width="0.9" stroke-dasharray="3 2"/>
+      <line x1="422" y1="280" x2="403" y2="293" stroke="#1a1917" stroke-width="0.9" stroke-dasharray="3 2"/>
+      <line x1="422" y1="280" x2="441" y2="291" stroke="#1a1917" stroke-width="0.9" stroke-dasharray="3 2"/>
+      <line x1="422" y1="300" x2="412" y2="326" stroke="#1a1917" stroke-width="0.9" stroke-dasharray="3 2"/>
+      <line x1="422" y1="300" x2="432" y2="324" stroke="#1a1917" stroke-width="0.9" stroke-dasharray="3 2"/>
+    </g>
+
+    <!-- Floor traces -->
+    <ellipse cx="417" cy="340" rx="10" ry="4" fill="none" stroke="#b87213" stroke-width="0.8" opacity="0.52"/>
+    <ellipse cx="434" cy="352" rx="8" ry="3" fill="none" stroke="#b87213" stroke-width="0.6" opacity="0.36"/>
+    <ellipse cx="407" cy="360" rx="6" ry="2.5" fill="none" stroke="#b87213" stroke-width="0.5" opacity="0.2"/>
+
+    <!-- Holo-Pit in Deep Space cross-section -->
+    <g class="zone-node" data-tip="Holo-Pit — a recessed section of the floor with walk-on LED glass beneath, and a transparent Holo-Gauze screen dropping from the ceiling directly above. A volumetric figure can be presented here without headsets. Visitors walk around and through the figure. The most accessible immersive offer in the space.">
+      <!-- Recessed floor rectangle -->
+      <rect x="130" y="304" width="100" height="12" rx="2" fill="#f0b8a0" fill-opacity="0.3" stroke="#c04828" stroke-width="0.7" stroke-dasharray="4 2"/>
+      <!-- Holo-Gauze drop line from ceiling -->
+      <line x1="155" y1="108" x2="155" y2="304" stroke="#c04828" stroke-width="0.6" stroke-dasharray="3 3" opacity="0.5"/>
+      <line x1="210" y1="108" x2="210" y2="304" stroke="#c04828" stroke-width="0.6" stroke-dasharray="3 3" opacity="0.5"/>
+      <!-- Gauze top bar on ceiling -->
+      <rect x="150" y="104" width="65" height="5" rx="1" fill="#c04828" fill-opacity="0.3" stroke="#c04828" stroke-width="0.5"/>
+      <text x="182" y="320" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#c04828" fill-opacity="0.7">Holo-Pit</text>
+    </g>
+    <!-- Leader to Holo-Pit -->
+    <line x1="155" y1="310" x2="108" y2="368" stroke="#c8c6c0" stroke-width="0.5" stroke-dasharray="3 3"/>
+    <text x="104" y="376" text-anchor="end" font-family="'DM Mono', monospace" font-size="9" fill="#9a9892">Holo-Pit</text>
+    <text x="104" y="388" text-anchor="end" font-family="'DM Mono', monospace" font-size="9" fill="#9a9892">LED glass · Holo-Gauze</text>
+
+    <!-- Annotation leaders -->
+    <line x1="264" y1="163" x2="152" y2="70" stroke="#c8c6c0" stroke-width="0.5" stroke-dasharray="3 3"/>
+    <text x="150" y="66" text-anchor="end" font-family="'DM Mono', monospace" font-size="9.5" fill="#5a5854">archived body</text>
+    <text x="150" y="54" text-anchor="end" font-family="'DM Mono', monospace" font-size="9" fill="#9a9892">Laban effort → projection quality</text>
+
+    <line x1="422" y1="250" x2="530" y2="198" stroke="#c8c6c0" stroke-width="0.5" stroke-dasharray="3 3"/>
+    <text x="534" y="194" font-family="'DM Mono', monospace" font-size="9.5" fill="#5a5854">live visitor</text>
+    <text x="534" y="206" font-family="'DM Mono', monospace" font-size="9" fill="#9a9892">laser-tracked in real time</text>
+
+    <line x1="350" y1="100" x2="412" y2="65" stroke="#c8c6c0" stroke-width="0.5" stroke-dasharray="3 3"/>
+    <text x="416" y="61" font-family="'DM Mono', monospace" font-size="9" fill="#9a9892">Orbbec LiDAR + laser tracking</text>
+
+    <line x1="200" y1="173" x2="146" y2="194" stroke="#c8c6c0" stroke-width="0.5" stroke-dasharray="3 3"/>
+    <text x="142" y="190" text-anchor="end" font-family="'DM Mono', monospace" font-size="9" fill="#9a9892">effort data</text>
+    <text x="142" y="202" text-anchor="end" font-family="'DM Mono', monospace" font-size="9" fill="#9a9892">→ visual texture</text>
+
+    <line x1="434" y1="346" x2="534" y2="366" stroke="#c8c6c0" stroke-width="0.5" stroke-dasharray="3 3"/>
+    <text x="538" y="362" font-family="'DM Mono', monospace" font-size="9" fill="#9a9892">traces linger on floor</text>
+    <text x="538" y="374" font-family="'DM Mono', monospace" font-size="9" fill="#9a9892">Schneider's remains</text>
+
+    <!-- Legend -->
+    <line x1="46" y1="410" x2="72" y2="410" stroke="#1a1917" stroke-width="1"/>
+    <text x="78" y="414" font-family="'DM Mono', monospace" font-size="9.5" fill="#5a5854">archived body</text>
+    <line x1="198" y1="410" x2="224" y2="410" stroke="#1a1917" stroke-width="1" stroke-dasharray="3 2"/>
+    <text x="230" y="414" font-family="'DM Mono', monospace" font-size="9.5" fill="#5a5854">live visitor</text>
+    <line x1="348" y1="410" x2="374" y2="410" stroke="#b87213" stroke-width="2"/>
+    <text x="380" y="414" font-family="'DM Mono', monospace" font-size="9.5" fill="#5a5854">effort / trace energy</text>
+    </svg>
+  </div>
+  <p class="fig-note">Hover over the archived body and visitor figures for descriptions of the Laban Effort and laser tracking systems.</p>
+</div>
+
+<!-- FIGURE 3: Infrastructure Stack -->
+<div class="figure-panel" id="panel-stack">
+  <div class="figure-number">Figure 3</div>
+  <div class="figure-title">The infrastructure stack</div>
+  <p class="figure-caption">The technical pipeline from physical input to display surface, showing four layers: input devices, processing and interpretation, archive storage, and display surfaces. Data flows vertically; the middleware layer (TouchDesigner) is the routing hub connecting all other layers.</p>
+  <div class="svg-wrap">
+    <svg viewBox="0 0 680 430" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arr3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="#9a9892" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+    </defs>
+
+    <!-- Layer labels -->
+    <text x="34" y="96" text-anchor="middle" font-family="'DM Mono', monospace" font-size="8.5" fill="#9a9892" letter-spacing="0.1em">INPUT</text>
+    <text x="34" y="194" text-anchor="middle" font-family="'DM Mono', monospace" font-size="8.5" fill="#9a9892" letter-spacing="0.1em">PROCESS</text>
+    <text x="34" y="294" text-anchor="middle" font-family="'DM Mono', monospace" font-size="8.5" fill="#9a9892" letter-spacing="0.1em">ARCHIVE</text>
+    <text x="34" y="374" text-anchor="middle" font-family="'DM Mono', monospace" font-size="8.5" fill="#9a9892" letter-spacing="0.1em">DISPLAY</text>
+
+    <!-- Dividers -->
+    <line x1="60" y1="140" x2="645" y2="140" stroke="#d0cdc4" stroke-width="0.5"/>
+    <line x1="60" y1="242" x2="645" y2="242" stroke="#d0cdc4" stroke-width="0.5"/>
+    <line x1="60" y1="332" x2="645" y2="332" stroke="#d0cdc4" stroke-width="0.5"/>
+
+    <!-- Row 1: Input -->
+    <g class="zone-node" data-tip="Orbbec Femto Mega — LiDAR depth camera capturing volumetric point clouds: discrete 3D coordinates representing the external surface of the dancer. Preserves flesh and texture rather than reducing the body to a skeletal stick figure. Mounted to motorised overhead truss.">
+      <rect x="66" y="60" width="150" height="58" rx="6" fill="#9fd8c4" fill-opacity="0.2" stroke="#1d7a60" stroke-width="0.7"/>
+      <text x="141" y="84" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#1d7a60">Orbbec Femto Mega</text>
+      <text x="141" y="100" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#1d7a60" fill-opacity="0.65">LiDAR · point cloud</text>
+    </g>
+
+    <g class="zone-node" data-tip="Sony Alpha 4K cameras — synchronised camera arrays recording raw video simultaneously. If AI motion models improve in ten years, raw video can be reprocessed to extract better data. The 'skin layer' of the archive, preserving texture alongside the skeleton.">
+      <rect x="234" y="60" width="150" height="58" rx="6" fill="#9fd8c4" fill-opacity="0.2" stroke="#1d7a60" stroke-width="0.7"/>
+      <text x="309" y="84" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#1d7a60">Sony Alpha 4K</text>
+      <text x="309" y="100" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#1d7a60" fill-opacity="0.65">raw video · skin layer</text>
+    </g>
+
+    <g class="zone-node" data-tip="Laser tracking — reads every body moving through the Deep Space in real time, enabling the space to respond to visitor presence. The same system that allows interactive performances to register the dancer also registers the audience.">
+      <rect x="402" y="60" width="150" height="58" rx="6" fill="#9fd8c4" fill-opacity="0.2" stroke="#1d7a60" stroke-width="0.7"/>
+      <text x="477" y="84" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#1d7a60">Laser tracking</text>
+      <text x="477" y="100" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#1d7a60" fill-opacity="0.65">visitor position · real-time</text>
+    </g>
+
+    <!-- Row 1 → 2 arrows -->
+    <line x1="141" y1="118" x2="141" y2="158" stroke="#9a9892" stroke-width="0.8" marker-end="url(#arr3)"/>
+    <line x1="309" y1="118" x2="309" y2="158" stroke="#9a9892" stroke-width="0.8" marker-end="url(#arr3)"/>
+    <line x1="477" y1="118" x2="477" y2="158" stroke="#9a9892" stroke-width="0.8" marker-end="url(#arr3)"/>
+
+    <!-- Row 2: Process -->
+    <g class="zone-node" data-tip="Theia3D / DeepLabCut — institutional-grade markerless skeleton reconstruction from standard video. Theia3D is highly regarded for its clinical-grade accuracy. DeepLabCut allows institutions to train their own models, avoiding dependence on any private company's survival. Output: the Motion Layer.">
+      <rect x="66" y="158" width="150" height="58" rx="6" fill="#c4bee8" fill-opacity="0.2" stroke="#5a4ab5" stroke-width="0.7"/>
+      <text x="141" y="182" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="#5a4ab5">Theia3D / DeepLabCut</text>
+      <text x="141" y="198" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#5a4ab5" fill-opacity="0.65">skeleton · motion layer</text>
+    </g>
+
+    <g class="zone-node" data-tip="Modosc (IRCAM ISMM Lab) — real-time library computing Laban Effort factors (Weight, Space, Time, Flow) as continuous numerical streams from skeletal data. Where Theia3D produces the skeleton, Modosc interprets its qualities. Output is routed directly into TouchDesigner to drive visual and sonic texture.">
+      <rect x="234" y="158" width="150" height="58" rx="6" fill="#c4bee8" fill-opacity="0.2" stroke="#5a4ab5" stroke-width="0.7"/>
+      <text x="309" y="182" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#5a4ab5">Modosc (IRCAM)</text>
+      <text x="309" y="198" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#5a4ab5" fill-opacity="0.65">Laban Effort → data stream</text>
+    </g>
+
+    <g class="zone-node" data-tip="TouchDesigner / vuo — open-source middleware routing all data streams to all display surfaces simultaneously. Receives OSC from Modosc, skeleton from Theia3D, point clouds via NDI, archive files from USD storage — and routes any signal to any output. Engineered for continuous museum use without version-cycle instability.">
+      <rect x="402" y="158" width="238" height="58" rx="6" fill="#c4bee8" fill-opacity="0.2" stroke="#5a4ab5" stroke-width="0.7"/>
+      <text x="521" y="182" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#5a4ab5">TouchDesigner / vuo</text>
+      <text x="521" y="198" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#5a4ab5" fill-opacity="0.65">middleware · archive ↔ display routing</text>
+    </g>
+
+    <!-- Row 2 → 3 arrows -->
+    <line x1="141" y1="216" x2="141" y2="258" stroke="#9a9892" stroke-width="0.8" marker-end="url(#arr3)"/>
+    <line x1="309" y1="216" x2="309" y2="258" stroke="#9a9892" stroke-width="0.8" marker-end="url(#arr3)"/>
+
+    <!-- Row 3: Archive -->
+    <g class="zone-node" data-tip="USD archive (Universal Scene Description) — developed by Pixar; becoming the 'PDF of 3D'. Stable, cross-software, designed to remain usable across decades. Stores a separate Motion Layer (skeletal data) and Skin Layer (volumetric scan) for every session. Readable by any future software that adopts the open standard.">
+      <rect x="66" y="258" width="150" height="58" rx="6" fill="#d3d1c7" fill-opacity="0.3" stroke="#5f5e5a" stroke-width="0.7"/>
+      <text x="141" y="282" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#444441">USD archive</text>
+      <text x="141" y="298" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#5f5e5a">skeleton + skin · stable · open</text>
+    </g>
+
+    <g class="zone-node" data-tip="MNEMOSYNE — purpose-built for dance heritage; links motion data, video, and annotations (including Labanotation) in a single searchable database. Developed through the ERA Chair in Digital Cultural Heritage. Integrates audiovisual data, motion capture, and metadata across heritage contexts.">
+      <rect x="234" y="258" width="150" height="58" rx="6" fill="#d3d1c7" fill-opacity="0.3" stroke="#5f5e5a" stroke-width="0.7"/>
+      <text x="309" y="282" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#444441">MNEMOSYNE</text>
+      <text x="309" y="298" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#5f5e5a">video · MoCap · metadata</text>
+    </g>
+
+    <g class="zone-node" data-tip="CIDOC-CRM semantic tagging — every interactive element tagged so that audience interactions become part of the archive's own record. The space logs not only what it holds but how it is encountered. Each visitor's navigation of the Discovery Zone becomes archival data in its own right.">
+      <rect x="402" y="258" width="150" height="58" rx="6" fill="#d3d1c7" fill-opacity="0.3" stroke="#5f5e5a" stroke-width="0.7"/>
+      <text x="477" y="282" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#444441">CIDOC-CRM tags</text>
+      <text x="477" y="298" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#5f5e5a">audience interaction logged</text>
+    </g>
+
+    <!-- Row 3 → 4 arrow -->
+    <line x1="309" y1="316" x2="309" y2="346" stroke="#9a9892" stroke-width="0.8" marker-end="url(#arr3)"/>
+
+    <!-- Row 4: Display -->
+    <g class="zone-node" data-tip="Deep Space — 4–8 high-lumen laser projectors (Barco UDX or Panasonic PT-RQ series) covering wall and floor, running at 8K / 120Hz. The monumental offer: 1:1 scale encounter with dance, shared, without headsets.">
+      <rect x="66" y="346" width="112" height="52" rx="6" fill="#f0b8a0" fill-opacity="0.25" stroke="#c04828" stroke-width="0.7"/>
+      <text x="122" y="368" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="#c04828">Deep Space</text>
+      <text x="122" y="384" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#c04828" fill-opacity="0.65">wall + floor · 8K</text>
+    </g>
+
+    <g class="zone-node" data-tip="Holo-Pit — a recessed floor section with walk-on LED glass and a transparent Holo-Gauze drop from the ceiling. Volumetric display without VR headsets. No device required, no prior knowledge assumed. The space's most accessible immersive offer.">
+      <rect x="190" y="346" width="112" height="52" rx="6" fill="#f0b8a0" fill-opacity="0.25" stroke="#c04828" stroke-width="0.7"/>
+      <text x="246" y="368" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="#c04828">Holo-Pit</text>
+      <text x="246" y="384" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#c04828" fill-opacity="0.65">volumetric · no headset</text>
+    </g>
+
+    <g class="zone-node" data-tip="LED pylons — 2-metre double-sided LED totems on wheels, each running a local node pulling from the central archive. Reconfigurable: arranged in a circle for a folk dance exhibition, lined up for a historical timeline. No installation crew required.">
+      <rect x="314" y="346" width="112" height="52" rx="6" fill="#f0b8a0" fill-opacity="0.25" stroke="#c04828" stroke-width="0.7"/>
+      <text x="370" y="368" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="#c04828">LED pylons</text>
+      <text x="370" y="384" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#c04828" fill-opacity="0.65">movable · composable</text>
+    </g>
+
+    <g class="zone-node" data-tip="Gesture booths (Discovery Zone) — small accessible booths with Leap Motion sensors allowing visitors to navigate the MNEMOSYNE database through hand gestures. No screen, no device, no expertise required. The archive as orientation space, not repository.">
+      <rect x="438" y="346" width="112" height="52" rx="6" fill="#f0b8a0" fill-opacity="0.25" stroke="#c04828" stroke-width="0.7"/>
+      <text x="494" y="365" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="#c04828">Gesture booths</text>
+      <text x="494" y="381" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#c04828" fill-opacity="0.65">Leap Motion</text>
+      <text x="494" y="393" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#c04828" fill-opacity="0.65">MNEMOSYNE</text>
+    </g>
+
+    </svg>
+  </div>
+  <p class="fig-note">Hover over any component to read its description. Vertical arrows indicate data flow direction.</p>
+</div>
+
+</main>
+
+<footer>
+  <span>DanceLab Experience Centre — Podiumkunstensite Leuven · LOV2030</span>
+  <span>Adriana Parente La Selva · commissioned by STUK, 2026</span>
+</footer>
+
+<script>
+  const tooltip = document.getElementById('tooltip');
+
+  document.querySelectorAll('[data-tip]').forEach(el => {
+    el.addEventListener('mouseenter', e => {
+      tooltip.textContent = el.dataset.tip;
+      tooltip.classList.add('visible');
+    });
+    el.addEventListener('mousemove', e => {
+      const x = e.clientX + 16;
+      const y = e.clientY + 16;
+      const tw = 270;
+      tooltip.style.left = (x + tw > window.innerWidth ? e.clientX - tw - 8 : x) + 'px';
+      tooltip.style.top = y + 'px';
+    });
+    el.addEventListener('mouseleave', () => {
+      tooltip.classList.remove('visible');
+    });
+  });
+
+  function showTab(id) {
+    document.querySelectorAll('.figure-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+</script>
+</body>
+</html>
