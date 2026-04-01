@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DanceLab Experience Center — Interactive Figures</title>
+<title>DanceLab Experience Centre — Interactive Figures</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400&display=swap');
 
@@ -251,9 +251,9 @@
 <div id="tooltip"></div>
 
 <header>
-  <div class="header-eyebrow">Interactive Figures — STUK / DanceLab Experience Center</div>
+  <div class="header-eyebrow">Interactive Figures — STUK / DanceLab Experience Centre</div>
   <h1>Designing the DanceLab</h1>
-  <p>Three diagrams mapping the spatial, technical, and conceptual architecture of the DanceLab Experience Center, Leuven. From the paper by Adriana Parente La Selva, commissioned by STUK, 2026.</p>
+  <p>Three diagrams mapping the spatial, technical, and conceptual architecture proposed for the DanceLab Experience Centre, Leuven. From the paper by Adriana Parente La Selva, commissioned by STUK, 2026.</p>
 </header>
 
 <nav>
@@ -315,10 +315,13 @@
       <text x="199" y="380" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#c04828" fill-opacity="0.7">education · Laban effort rendering</text>
       <text x="199" y="396" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#c04828" fill-opacity="0.7">intra-active · visitor + archive</text>
       <text x="199" y="452" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9.5" fill="#c04828" fill-opacity="0.45">wall + floor projection · 8K · 120Hz · laser tracking</text>
-      <!-- Holo-Pit inset -->
-      <rect x="62" y="408" width="84" height="38" rx="4" fill="none" stroke="#c04828" stroke-width="0.6" stroke-dasharray="4 3" stroke-opacity="0.5"/>
-      <text x="104" y="423" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#c04828" fill-opacity="0.55">Holo-Pit</text>
-      <text x="104" y="437" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#c04828" fill-opacity="0.55">volumetric</text>
+    </g>
+    <!-- Holo-Pit — separate clickable node within Deep Space -->
+    <g class="zone-node" data-tip="Holo-Pit — a recessed floor section within the Deep Space with walk-on LED glass and a transparent Holo-Gauze screen dropping from the ceiling above. Volumetric display without VR headsets. No device required, no prior knowledge assumed. The space's most accessible immersive offer — visitors can simply walk in and encounter a volumetric figure.">
+      <rect x="58" y="404" width="122" height="52" rx="5" fill="#f0b8a0" fill-opacity="0.35" stroke="#c04828" stroke-width="0.8" stroke-dasharray="5 3"/>
+      <text x="119" y="424" text-anchor="middle" font-family="'DM Mono', monospace" font-size="10" fill="#c04828">Holo-Pit</text>
+      <text x="119" y="440" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#c04828" fill-opacity="0.7">volumetric · no headset</text>
+      <text x="119" y="450" text-anchor="middle" font-family="'DM Mono', monospace" font-size="8.5" fill="#c04828" fill-opacity="0.45">LED glass floor · Holo-Gauze</text>
     </g>
 
     <!-- Zone 4: The Lab -->
@@ -353,7 +356,7 @@
 <div class="figure-panel" id="panel-deepspace">
   <div class="figure-number">Figure 2</div>
   <div class="figure-title">The Deep Space — intra-active environment</div>
-  <p class="figure-caption">Cross-section of the Deep Space showing the relationship between the archived body (solid), the live visitor (dashed), and the effort/trace energy (amber) that both generate. Based on Karen Barad's concept of intra-action: neither body pre-exists the encounter — both are constituted through it.</p>
+  <p class="figure-caption">Cross-section of the Deep Space showing the relationship between the archived body (solid), the live visitor (dashed), and the effort/trace energy (amber) that both generate. The Holo-Pit — a recessed LED glass floor with a Holo-Gauze drop — appears at the front of the room as a distinct volumetric zone within the larger space. Based on Karen Barad's concept of intra-action: neither body pre-exists the encounter — both are constituted through it.</p>
   <div class="svg-wrap">
     <svg viewBox="0 0 680 440" xmlns="http://www.w3.org/2000/svg">
 
@@ -411,6 +414,22 @@
     <ellipse cx="417" cy="340" rx="10" ry="4" fill="none" stroke="#b87213" stroke-width="0.8" opacity="0.52"/>
     <ellipse cx="434" cy="352" rx="8" ry="3" fill="none" stroke="#b87213" stroke-width="0.6" opacity="0.36"/>
     <ellipse cx="407" cy="360" rx="6" ry="2.5" fill="none" stroke="#b87213" stroke-width="0.5" opacity="0.2"/>
+
+    <!-- Holo-Pit in Deep Space cross-section -->
+    <g class="zone-node" data-tip="Holo-Pit — a recessed section of the floor with walk-on LED glass beneath, and a transparent Holo-Gauze screen dropping from the ceiling directly above. A volumetric figure can be presented here without headsets. Visitors walk around and through the figure. The most accessible immersive offer in the space.">
+      <!-- Recessed floor rectangle -->
+      <rect x="130" y="304" width="100" height="12" rx="2" fill="#f0b8a0" fill-opacity="0.3" stroke="#c04828" stroke-width="0.7" stroke-dasharray="4 2"/>
+      <!-- Holo-Gauze drop line from ceiling -->
+      <line x1="155" y1="108" x2="155" y2="304" stroke="#c04828" stroke-width="0.6" stroke-dasharray="3 3" opacity="0.5"/>
+      <line x1="210" y1="108" x2="210" y2="304" stroke="#c04828" stroke-width="0.6" stroke-dasharray="3 3" opacity="0.5"/>
+      <!-- Gauze top bar on ceiling -->
+      <rect x="150" y="104" width="65" height="5" rx="1" fill="#c04828" fill-opacity="0.3" stroke="#c04828" stroke-width="0.5"/>
+      <text x="182" y="320" text-anchor="middle" font-family="'DM Mono', monospace" font-size="9" fill="#c04828" fill-opacity="0.7">Holo-Pit</text>
+    </g>
+    <!-- Leader to Holo-Pit -->
+    <line x1="155" y1="310" x2="108" y2="368" stroke="#c8c6c0" stroke-width="0.5" stroke-dasharray="3 3"/>
+    <text x="104" y="376" text-anchor="end" font-family="'DM Mono', monospace" font-size="9" fill="#9a9892">Holo-Pit</text>
+    <text x="104" y="388" text-anchor="end" font-family="'DM Mono', monospace" font-size="9" fill="#9a9892">LED glass · Holo-Gauze</text>
 
     <!-- Annotation leaders -->
     <line x1="264" y1="163" x2="152" y2="70" stroke="#c8c6c0" stroke-width="0.5" stroke-dasharray="3 3"/>
@@ -571,7 +590,7 @@
 </main>
 
 <footer>
-  <span>DanceLab Experience Center — Podiumkunstensite Leuven · LOV2030</span>
+  <span>DanceLab Experience Centre — Podiumkunstensite Leuven · LOV2030</span>
   <span>Adriana Parente La Selva · commissioned by STUK, 2026</span>
 </footer>
 
